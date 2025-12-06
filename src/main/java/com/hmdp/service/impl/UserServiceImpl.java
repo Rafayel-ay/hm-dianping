@@ -15,10 +15,12 @@ import com.hmdp.utils.MailUtils;
 import com.hmdp.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 
@@ -44,6 +46,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private MailUtils mailUtils;
+
     @Override
     public Result sendCode(String phone, HttpSession session) {
         //1、校验邮箱格式--代替heima的手机号验证
@@ -60,6 +65,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         //5、发送验证码
         log.info("发送登录验证码：{}", code);
+
+        // ====== 新增：实际发送邮件 ======
+        try {
+            mailUtils.sendTestMail(phone, code);
+            log.info("邮件已发送到：{}", phone);
+        } catch (MessagingException e) {
+            log.error("邮件发送失败：{}", e.getMessage(), e);
+            return Result.fail("邮件发送失败，请稍后重试");
+        }
+
+        // ==============================
 
         //返回0k
         return Result.ok();
