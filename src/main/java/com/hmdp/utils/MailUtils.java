@@ -1,5 +1,8 @@
 package com.hmdp.utils;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -14,43 +17,56 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
+@Component
 public class MailUtils {
-    public static void main(String[] args) throws MessagingException {
-        //可以在这里直接测试方法，填自己的邮箱即可
-        sendTestMail("2417497653@qq.com", new MailUtils().achieveCode());
-    }
 
-    public static void sendTestMail(String email, String code) throws MessagingException {
+    // 从YAML配置文件中注入SMTP配置
+    @Value("${spring.mail.smtp.host}")
+    private String smtpHost;
+
+    @Value("${spring.mail.smtp.port}")
+    private String smtpPort;
+
+    @Value("${spring.mail.smtp.username}")
+    private String smtpUsername;
+
+    @Value("${spring.mail.smtp.password}")
+    private String smtpPassword;
+
+    /**
+     * 非静态方法，通过Spring注入配置
+     */
+    public void sendTestMail(String email, String code) throws MessagingException {
         // 创建Properties 类用于记录邮箱的一些属性
         Properties props = new Properties();
         // 表示SMTP发送邮件，必须进行身份验证
         props.put("mail.smtp.auth", "true");
-        //此处填写SMTP服务器
-        props.put("mail.smtp.host", "smtp.qq.com");
-        //端口号，QQ邮箱端口587和465
-        props.put("mail.smtp.port", "465");
+        // 从配置文件中读取SMTP服务器
+        props.put("mail.smtp.host", smtpHost);
+        // 端口号，QQ邮箱端口587和465
+        props.put("mail.smtp.port", smtpPort);
         props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.socketFactory.fallback", "false");
-        props.put("mail.smtp.socketFactory.port", "465");
-        // 此处填写，写信人的账号
-        props.put("mail.user", "2417497653@qq.com");
-        // 此处填写16位STMP口令
-        props.put("mail.password", "enydyvggztjceadd");
+        props.put("mail.smtp.socketFactory.port", smtpPort);
+        // 从配置文件中读取写信人的账号
+        props.put("mail.user", smtpUsername);
+        // 从配置文件中读取STMP口令
+        props.put("mail.password", smtpPassword);
+
         // 构建授权信息，用于进行SMTP进行身份验证
         Authenticator authenticator = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                // 用户名、密码
-                String userName = props.getProperty("mail.user");
-                String password = props.getProperty("mail.password");
-                return new PasswordAuthentication(userName, password);
+                // 直接使用注入的值
+                return new PasswordAuthentication(smtpUsername, smtpPassword);
             }
         };
+
         // 使用环境属性和授权信息，创建邮件会话
         Session mailSession = Session.getInstance(props, authenticator);
         // 创建邮件消息
         MimeMessage message = new MimeMessage(mailSession);
         // 设置发件人
-        InternetAddress form = new InternetAddress(props.getProperty("mail.user"));
+        InternetAddress form = new InternetAddress(smtpUsername);
         message.setFrom(form);
         // 设置收件人的邮箱
         InternetAddress to = new InternetAddress(email);
@@ -63,6 +79,7 @@ public class MailUtils {
         Transport.send(message);
     }
 
+    // 保留achieveCode方法为静态方法，因为它不依赖配置
     public static String achieveCode() {  //由于数字 1 、 0 和字母 O 、l 有时分不清楚，所以，没有数字 1 、 0
         String[] beforeShuffle = new String[]{"2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F",
                 "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a",
