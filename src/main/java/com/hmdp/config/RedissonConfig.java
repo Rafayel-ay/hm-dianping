@@ -29,11 +29,11 @@ public class RedissonConfig {
         return Redisson.create(config);
     }
 
-    @Bean
+/*    @Bean
     public RedissonClient redissonClient2() {
         // 配置
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://" + redisHost + ": 6380");
+        config.useSingleServer().setAddress("redis://" + redisHost + ":6380");
         // 创建RedissonClient对象
         return Redisson.create(config);
     }
@@ -42,8 +42,8 @@ public class RedissonConfig {
     public RedissonClient redissonClient3() {
         // 配置
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://" + redisHost + ": 6381" );
+        config.useSingleServer().setAddress("redis://" + redisHost + ":6381" );
         // 创建RedissonClient对象
         return Redisson.create(config);
-    }
+    }*/
 }
