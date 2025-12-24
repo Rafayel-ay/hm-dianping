@@ -55,7 +55,7 @@ public class Blog implements Serializable {
      */
     @TableField(exist = false)
     private Boolean isLike;
-
+    // boolean类型变量尽量避免is开头
     /**
      * 标题
      */
